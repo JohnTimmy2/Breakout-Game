@@ -6,12 +6,23 @@ class ExampleScene extends Phaser.Scene {
   lives=3;
   livesText;
   lifeLostText;
+  playing = false;
+  startButton;
   score = 0;
-hitBrick(ball, brick) {
-  const destroyTween = this.tweens.add({
-    targets: brick,
-    ease: "Linear",
-    repeat: 0,
+  startGame() {
+    this.startButton.destroy();
+    this.ball.body.setVelocity(150, -150);
+    this.playing = true;
+  }
+  hitPaddle(ball, paddle) {
+    this.ball.anims.play("wobble");
+    ball.body.velocity.x = -5 (paddle.x - ball.x);
+  }
+  hitBrick(ball, brick) {
+    const destroyTween = this.tweens.add({
+      targets: brick,
+      ease: "Linear",
+      repeat: 0,
     duration: 200,
     props: {
       scaleX: 0,
@@ -80,8 +91,47 @@ hitBrick(ball, brick) {
       frameWidth: 20,
       frameHeight: 20,
     });
+    this.load.spritesheet("button", "assets/button.png", {  
+      frameWidth: 120,
+      frameHeight: 40,
+    });
   }
   create() {
+    this.startButton = this.add.sprite(
+      this.scale.width * 0.5,
+      this.scale.height * 0.5,
+      "button",
+      0,
+    );
+   this.startButton.setInteractive();
+this.startButton.on(
+  "pointerover",
+  () => {
+    this.startButton.setFrame(1);
+  },
+  this,
+);
+this.startButton.on(
+  "pointerdown",
+  () => {
+    this.startButton.setFrame(2);
+  },
+  this,
+);
+this.startButton.on(
+  "pointerout",
+  () => {
+    this.startButton.setFrame(0);
+  },
+  this,
+);
+this.startButton.on(
+  "pointerup",
+  () => {
+    this.startGame();
+  },
+  this,
+);
     this.physics.world.checkCollision.down = false;
     this.ball = this.add.sprite(
       this.scale.width * 0.5,
@@ -96,7 +146,6 @@ hitBrick(ball, brick) {
       })
     });
     this.physics.add.existing(this.ball);
-    this.ball.body.setVelocity(150,- 150);
     this.ball.body.setCollideWorldBounds(true, 1, 1);
     this.ball.body.setBounce(1);
     this.paddle = this.add.sprite(
@@ -138,17 +187,18 @@ hitBrick(ball, brick) {
     this.physics.collide(this.ball, this.bricks, (ball, brick) =>
       this.hitBrick(ball, brick),
     );
+    if (this.playing) {
     this.paddle.x = this.input.x || this.scale.width * 0.5;
     if (this.bricks.countActive() === 0) {
       alert("You Win!");
     }
-    this.paddle.x = this.input.x || this.scale.width * 0.5;
     const ballOutofBounds = !Phaser.Geom.Rectangle.Overlaps(
       this.physics.world.bounds,
       this.ball.getBounds()
     );
     if(ballOutofBounds) {
       this.ballLeaveScreen();
+    }
     }
   }
 }
