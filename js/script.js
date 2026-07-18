@@ -5,6 +5,8 @@ class ExampleScene extends Phaser.Scene {
   }
   create() {
     this.ball = this.add.image(50, 50, "ball");
+    this.physics.add.existing(this.ball);
+    this.ball.body.setVelocity(150, 150);
   }
   update() {}
 }
@@ -17,6 +19,9 @@ const config = {
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
+  },
+  physics: {
+    default: "arcade",
   },
   scene: ExampleScene,
 };
