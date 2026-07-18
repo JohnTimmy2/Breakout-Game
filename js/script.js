@@ -7,6 +7,7 @@ class ExampleScene extends Phaser.Scene {
   livesText;
   lifeLostText;
   playing = false;
+  ballLeft = false;
   startButton;
   score = 0;
   startGame() {
@@ -14,10 +15,7 @@ class ExampleScene extends Phaser.Scene {
     this.ball.body.setVelocity(150, -150);
     this.playing = true;
   }
-  hitPaddle(ball, paddle) {
-    this.ball.anims.play("wobble");
-    ball.body.velocity.x = -5 (paddle.x - ball.x);
-  }
+
   hitBrick(ball, brick) {
     const destroyTween = this.tweens.add({
       targets: brick,
@@ -32,6 +30,7 @@ class ExampleScene extends Phaser.Scene {
       brick.destroy();
     },
   });
+    this.brickHitSound.play();
   this.score += 10;
   this.scoreText.setText(`points: ${this.score}`);
 }
@@ -39,6 +38,8 @@ class ExampleScene extends Phaser.Scene {
     this.ball.anims.play("wobble");
   }
   ballLeaveScreen() {
+      if (this.ballLeft) return;
+        this.ballLeft = true;
     this.lives--;
     if (this.lives > 0){
       this.livesText.setText(`lives: ${this.lives}`);
@@ -49,13 +50,17 @@ class ExampleScene extends Phaser.Scene {
         () => {
           this.lifeLostText.visible = false;
           this.ball.body.setVelocity(150, -150);
+          this.ballLeft = false;
         },
         this,
       );
     } else {
+      this.gameOverSound.play();
+  this.time.delayedCall(2000, () => {
       location.reload();
-    }
+    });
   }
+}
   initBricks() {
     const bricksLayout = {
       width: 50,
@@ -84,9 +89,11 @@ class ExampleScene extends Phaser.Scene {
     }
   }
   preload() {
+    this.load.audio("gameOver", "assets/gameOver.mp3");
     this.load.image("ball", "assets/ball.png");
     this.load.image("paddle", "assets/paddle.png");
     this.load.image("brick", "assets/brick.png");
+      this.load.audio("brickHit", "assets/brickHit.mp3");
     this.load.spritesheet("wobble", "assets/wobble.png", {
       frameWidth: 20,
       frameHeight: 20,
@@ -97,6 +104,8 @@ class ExampleScene extends Phaser.Scene {
     });
   }
   create() {
+    this.gameOverSound = this.sound.add("gameOver");
+    this.brickHitSound = this.sound.add("brickHit");
     this.startButton = this.add.sprite(
       this.scale.width * 0.5,
       this.scale.height * 0.5,
