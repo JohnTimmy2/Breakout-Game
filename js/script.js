@@ -2,6 +2,13 @@ class ExampleScene extends Phaser.Scene {
   ball;
   paddle;
   bricks;
+  scoreText;
+  score = 0;
+  hitBrick(ball, brick) { 
+    brick.destroy();
+    this.score += 10;
+    this.scoreText.setText(`points: ${this.score}`);
+  }
  initBricks() {
     const bricksLayout = {
       width: 50,
@@ -56,9 +63,16 @@ class ExampleScene extends Phaser.Scene {
     this.paddle.body.setCollideWorldBounds(true, 1, 1);
     this.physics.add.existing(this.paddle);
     this.initBricks();
+    this.scoreText = this.add.text(5, 5, "points: 0", {
+      font: "18px Arial",
+      color: "#0095DD",
+    });
   }
   update() {
     this.physics.collide(this.ball, this.paddle);
+    this.physics.collide(this.ball, this.bricks, (ball, brick) => {
+      this.hitBrick(ball,brick);
+    });
     this.paddle.x = this.input.x || this.scale.width * 0.5;
     const ballOutofBounds = !Phaser.Geom.Rectangle.Overlaps(
       this.physics.world.bounds,
